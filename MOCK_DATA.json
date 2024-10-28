@@ -795,18 +795,10 @@
     "id": 100,
     "first_name": "Ianthe",
     "last_name": "Elcocks",
-    "email": "ielcocks2r@fotki.com",
     "gender": "Female",
     "title": "Compensation Analyst"
   },
-  {
-    "id": 101,
-    "first_name": "Marylin",
-    "last_name": "Turnock",
-    "email": "mturnock2s@theatlantic.com",
-    "gender": "Female",
-    "title": "Software Consultant"
-  },
+  null,
   {
     "id": 102,
     "first_name": "Cirstoforo",
@@ -7990,13 +7982,5 @@
     "email": "agurlingrq@ebay.co.uk",
     "gender": "Female",
     "title": "GIS Technical Architect"
-  },
-  {
-    "id": 1000,
-    "first_name": "Claudio",
-    "last_name": "Stagge",
-    "email": "cstaggerr@posterous.com",
-    "gender": "Male",
-    "title": "Sales Representative"
   }
 ]
