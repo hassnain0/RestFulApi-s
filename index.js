@@ -2,8 +2,40 @@ const express = require('express');
 
 const users = require("./MOCK_DATA.json");
 const app = express();
-
 const fs = require('fs');
+
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/user').then(() => console.log("DataBase Connected")).catch((er) => {
+    console.log(er)
+})
+
+const userSchema = new mongoose.Schema({
+    first_name: {
+        type: String,
+        required: true,
+    },
+    last_name: {
+        type: String,
+        required: false,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    job_title: {
+        type: String,
+        required: true,
+    },
+    address: {
+        type: String,
+        required: true,
+    }
+});
+
+
+const usermodel = mongoose.model("user", userSchema);
 
 
 app.get('/users', (req, res) => {
@@ -14,20 +46,14 @@ app.get('/users', (req, res) => {
 })
 
 
-//Creating MiddleWare for data
-
-// app.use(express.urlencoded({ extended: false }))
-// //Get All Users for front end:
+//Get All Users for front end:
 
 // //Creating MiddleWare
 // app.use((req,res,next)=>{
 //     console.log("Calling Next Middle ware");
 //     next();
 // })
-
-app.use((req,res,next)=>{
-    fs.appendFile("userdefined.txt",`File was created at${Date.now()}: ${req.method} :${req.path}`,(err,data)=>next())
-})
+app.use(express.json());
 
 
 app.get('/api/users', (req, res) => {
@@ -35,18 +61,37 @@ app.get('/api/users', (req, res) => {
 });
 
 //Creating New User:
-app.post("/api/users", (req, res) => {
+app.post("/api/users", async(req, res) => {
+
+
     const body = req.body;
-    users.push({ id: users.length + 1, ...body });
-    fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => { })
-    return res.json({ status: 'Sucess' })
+
+    if (!body || !body.email || !body.first_name || !body.last_name || !body.email || !body.title || !body.gender) {
+        return res.status(400).json({ msg: "All fields are required" })
+    }
+    
+   await usermodel.create({
+        first_name:body.first_name,
+        last_name:body.last_name,
+        email:body.email,
+        job_title:body.title,
+        gender:body.gender,
+    });
+
+    return res.status(201).send("User Successfully Created");
 })
 
 app.route('/api/users/:id')
     .get((req, res) => {
         const id = Number(req.params.id);
-        const user = users.find((user) => user.id === id);
-        return res.json(user);
+
+        console.log("Id", id)
+        const user = users.find((user) => user && user.id === id);
+        if (!user) {
+            return res.status(404).json({ msg: "Requested User not Exist" })
+        }
+
+        return res.json(user)
     })
     .patch((req, res) => {
 
@@ -93,8 +138,8 @@ app.route('/api/users/:id')
     })
     .delete(("/api/users/:id", (req, res) => {
 
-        
-        const id =Number(req.params.id);
+
+        const id = Number(req.params.id);
         fs.readFile('./MOCK_DATA.json', 'utf-8', (er, data) => {
             if (er) {
                 return res.status(404).send("Data not found");
@@ -107,22 +152,18 @@ app.route('/api/users/:id')
                         return i;
                     }
                 }
-    
+
             }
-    
-            let jsonData=JSON.parse(data);
-            let index=findtoDobyId(jsonData,id);
 
-            let deletedData=jsonData.splice(index,1);
-    
+            let jsonData = JSON.parse(data);
+            let index = findtoDobyId(jsonData, id);
 
-            
+            let deletedData = jsonData.splice(index, 1);
 
-            
-                fs.writeFile('./MOCK_DATA.json', JSON.stringify(deletedData), () => {
-                    return res.json({ 'status': 'ok' })
-                })
-                    })
+            fs.writeFile('./MOCK_DATA.json', JSON.stringify(deletedData), () => {
+                return res.json({ 'status': 'ok' })
+            })
+        })
     }))
 
 
